@@ -1,3 +1,8 @@
+function Player(name, token) {
+    this.getName = () => name;
+    this.getToken = () => token;
+}
+
 function gameboard() {
     const row = 6;
     const column = 7;
@@ -20,29 +25,20 @@ function gameboard() {
             .filter(cell => cell.getValue() === 0);
 
         // Check column is full
-        if (!(availableCells.length)) return false;
+        if (!(availableCells.length)) {
+            return false;
+        }
 
         let lastAvailableCells = availableCells.length - 1;
 
-        board[lastAvailableCells][column].addToken(player)
-    }
+        board[lastAvailableCells][column].addToken(player);
 
-    const printBoard = () => {
-        for (let y = 0; y < row; y++) {
-            let rowString = "";
-            for (let x = 0; x < column; x++) {
-                rowString += board[y][x].getValue() + " ";
-            }
-            console.log(rowString);
-        }
     }
 
     return {
         addTokenToBoard,
         getBoard,
-        printBoard
     }
-
 
 }
 
@@ -55,16 +51,72 @@ function cell() {
         value = player
     }
 
-    return {getValue, addToken}
+    return {
+        getValue,
+        addToken
+    }
 }
 
-//function gameController(player1='Player 1', player2='Player 2') {}
+function gameController() {
+    const player1 = new Player('konrad', 1);
+    const player2 = new Player('jacek', 2);
 
-const game = gameboard()
-console.log(game.printBoard())
-console.log(game.addTokenToBoard(0,1))
-console.log(game.printBoard())
-console.log(game.addTokenToBoard(0,1))
-console.log(game.printBoard())
-console.log(game.addTokenToBoard(1,1))
-console.log(game.printBoard())
+    const board = gameboard();
+
+    let activePlayer = player1;
+
+    const getActivePlayer = () => activePlayer;
+
+    const switchActivePlayer = () => {
+        activePlayer = activePlayer === player1 ? player2 : player1;
+    }
+
+    const playRound = (column) => {
+        board.addTokenToBoard(column, getActivePlayer().getToken());
+        switchActivePlayer();
+    }
+
+    return {
+        playRound,
+        getActivePlayer,
+        getBoard: board.getBoard
+    }
+}
+
+function ScreenController() {
+    const boardElement = document.querySelector('.board');
+    const turnElement = document.querySelector('.turn');
+    const game = gameController();
+
+    const updateScreen = () => {
+        const board = game.getBoard();
+        const activePlayer = game.getActivePlayer();
+
+        boardElement.textContent = '';
+        turnElement.textContent = `${activePlayer.getName()}'s turn...`;
+
+        board.forEach((row) => {
+            row.forEach((cell, index) => {
+                const button = document.createElement('button')
+                button.classList.add("cell");
+                button.dataset.column = index;
+                button.textContent = cell.getValue();
+                boardElement.appendChild(button);
+            });
+        });
+
+    }
+
+    function clickHandlerBoard(e) {
+        const selectedColumn = e.target.dataset.column;
+        if (!selectedColumn) return;
+
+        game.playRound(selectedColumn);
+        updateScreen();
+    }
+    boardElement.addEventListener("click", clickHandlerBoard);
+
+    updateScreen();
+}
+
+ScreenController();
