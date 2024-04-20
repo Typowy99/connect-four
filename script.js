@@ -17,44 +17,47 @@ function gameboard() {
     }
 
     const checkGameEnd = () => {
-
         const boardValues = board.map(row => row.map(cell => cell.getValue()));
 
-        // horizontal
-        for (let y = 0; y < row; y++) {
-            for (let x = 0; x <= (column - 4); x++) {
-                if(boardValues[y].slice(x, x + 4).every(item => item === boardValues[y][x] && item !== 0)) {
-                    return true;
-                }
-            }
-        }
-
-        //bias
-        for (let y = 3; y < row; y++) {
-            for (let x = 0; x <= (column - 4); x++) {
-                const group = [];
-                for (let i = 0; i < 4; i++) {
-                    group.push(boardValues[y - i][x + i]);
-                }
+        const checkGroups = (groups) => {
+            for (const group of groups) {
                 if (group.every(item => item === group[0] && item !== 0)) {
                     return true;
                 }
             }
-        }
+            return false;
+        };
 
-        const boardValuesColumn = boardValues[0].map((_, x) => boardValues.map(row => row[x]));
+        const horizontalGroups = [];
+        const diagonalGroups = [];
+        const verticalGroups = [];
 
-        // vertical
-        for (let y = 0; y < boardValuesColumn.length; y++) {
-            for (let x = 0; x <= (boardValuesColumn[0].length - 4); x++) {
-                if(boardValuesColumn[y].slice(x, x + 4).every(item => item === boardValuesColumn[y][x] && item !== 0)) {
-                    return true;
+        // Horizontal and vertical groups
+        for (let y = 0; y < row; y++) {
+            for (let x = 0; x <= (column - 4); x++) {
+                horizontalGroups.push(boardValues[y].slice(x, x + 4));
+                if (y <= (row - 4)) {
+                    verticalGroups.push(boardValues.slice(y, y + 4).map(row => row[x]));
                 }
             }
         }
 
-        return false;
-    }
+        // Diagonal groups (both directions)
+        for (let y = 0; y <= (row - 4); y++) {
+            for (let x = 0; x <= (column - 4); x++) {
+                const diagonalDown = [];
+                const diagonalUp = [];
+                for (let i = 0; i < 4; i++) {
+                    diagonalDown.push(boardValues[y + i][x + i]);
+                    diagonalUp.push(boardValues[y + 3 - i][x + i]);
+                }
+                diagonalGroups.push(diagonalDown, diagonalUp);
+            }
+        }
+
+        return checkGroups(horizontalGroups) || checkGroups(diagonalGroups) || checkGroups(verticalGroups);
+    };
+
 
     const getBoard = () => board;
 
@@ -99,8 +102,8 @@ function cell() {
 }
 
 function gameController() {
-    const player1 = new Player('konrad', 1);
-    const player2 = new Player('jacek', 2);
+    const player1 = new Player('red', 1);
+    const player2 = new Player('blue', 2);
 
     const board = gameboard();
 
@@ -136,6 +139,8 @@ function ScreenController() {
     const turnElement = document.querySelector('.turn');
     const infoElement = document.querySelector('.info');
     const infoText = document.querySelector('.info-text');
+    const shadow = document.querySelector('.shadow')
+    const btnNewGame = document.querySelector('.new-game')
 
     const game = gameController();
 
@@ -144,33 +149,45 @@ function ScreenController() {
         const activePlayer = game.getActivePlayer();
 
         boardElement.textContent = '';
-        turnElement.textContent = `${activePlayer.getName()}'s turn...`;
+
+
+        turnElement.style.backgroundColor = activePlayer.getToken() === 1 ? 'red' : 'blue';
 
         board.forEach((row) => {
             row.forEach((cell, index) => {
-                const button = document.createElement('button')
+                const button = document.createElement('button');
                 button.classList.add("cell");
                 button.dataset.column = index;
-                button.textContent = cell.getValue();
+                button.dataset.color = cell.getValue();
+                if (cell.getValue()) {
+                    button.classList.add(button.dataset.color === '1' ? 'red' : 'blue');
+                }
+
                 boardElement.appendChild(button);
             });
         });
-
     }
+
 
     function clickHandlerBoard(e) {
         const selectedColumn = e.target.dataset.column;
+
         if (!selectedColumn) return;
 
         if(game.playRound(selectedColumn)) {
             infoElement.style.display = 'block';
             infoText.textContent = `${game.getActivePlayer().getName()} won!`;
+            shadow.style.display = 'block';
         }
         updateScreen();
     }
     boardElement.addEventListener("click", clickHandlerBoard);
 
     updateScreen();
+
+    btnNewGame.addEventListener('click', function() {
+        location.reload();
+    });
 }
 
 ScreenController();

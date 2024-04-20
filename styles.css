@@ -1,39 +1,68 @@
-.container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 .board {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 490px;
     display: grid;
-    height: 500px;
-    width: 500px;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
     border: 1px solid black;
-    gap: 2px;
-    padding: 2px;
-    background-color: yellow;
-    margin: 0 auto;
+    border-radius: 10px;
+    gap: 5px;
+    padding: 10px;
+    background-color: rgb(24, 74, 97);
   }
 
 .cell {
+    position: relative;
+    height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     font-size: 2rem;
-    border: 1px solid grey;
-    background: lightyellow;
+    border: 1px solid rgb(24, 74, 97);
+    border-radius: 100px;
+    background: rgb(255, 255, 255);
     cursor: pointer;
+    -webkit-box-shadow: inset -1px 0px 11px 5px rgba(0,0,0,0.21);
+    box-shadow: inset -1px 0px 11px 5px rgba(0,0,0,0.21);
 }
 .info {
     display: none;
-    width: 500px;
+    width: 400px;
     height: 300px;
     position: absolute;
     top: 50%;
     right: 50%;
     transform: translate(50%, -50%);
+    text-align: center;
+    font-size: 40px;
     z-index: 20;
     background-color: white;
+}
+.red {
+    background-color: red;
+}
+.blue {
+    background-color: blue;
+}
+.turn {
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    left: 10%;
+    bottom: calc(50% - 35px);
+    border-radius: 100px;
+}
+.shadow {
+    display: none;
+    position: absolute;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(12, 4, 4, 0.71);
 }
